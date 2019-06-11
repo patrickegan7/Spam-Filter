@@ -4,3 +4,6 @@ enron3.tar.gz
 enron4.tar.gz
 enron5.tar.gz
 enron6.tar.gz
+
+dataset/
+zipped_dataset/
