@@ -1,48 +1,56 @@
 from pathlib import Path
+from nltk.corpus import words
 
-data_path = Path("dataset/enron")
+data_path = Path("dataset")
 word_counts = dict() # follows the convention: {word : (ham count, spam count)}
 ham_file_count = 0
 spam_file_count = 0
 vocabulary_size = 0
 
 def process():
-    for i in range(1:7):
-        dir = data_path / "i"
+    global ham_file_count
+    global spam_file_count
+    global vocabulary_size
 
-        for file in dir / "ham":
+    for i in range(1, 7):
+        dir = data_path / ("enron" + str(i))
+
+        for file in Path(dir/"ham").iterdir():
             ham_file_count += 1
-            email = open(str(file), "r")
-            contents = f.read().split()
+            email = open(str(file), "r", encoding="latin-1")
+            contents = email.read().split()
             process_ham(contents)
 
-        for file in dir / "spam":
+        for file in Path(dir/"spam").iterdir():
             spam_file_count += 1
-            email = open(str(file), "r")
-            contents = f.read().split()
+            email = open(str(file), "r", encoding="latin-1")
+            contents = email.read().split()
             process_spam(contents)
 
     vocabulary_size = len(word_counts)
-    
-# determine if a token is a valid 'word'
-def isValid(word):
-    # TODO: Need to implement
-    return false
 
 def process_ham(contents):
     for word in contents:
-        if isValid(word):
+        if word in words.words():
             # Add word to dictionary
             if word in word_counts:
                 word_counts[word][0] += 1
             else:
-                word_counts[word] = (1, 0)
+                word_counts[word] = [1, 0]
 
 def process_spam(contents):
     for word in contents:
-        if isValid(word):
+        if word in words.words():
             # Add word to dictionary
             if word in word_counts:
                 word_counts[word][1] += 1
             else:
-                word_counts[word] = (0, 1)
+                word_counts[word] = [0, 1]
+
+def print_variables():
+    print("Number of ham files: " + str(ham_file_count))
+    print("Number of spam files: " + str(spam_file_count))
+    print("Size of vocabulary: " + str(vocabulary_size))
+
+process()
+print_variables()
