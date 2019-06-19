@@ -1,5 +1,5 @@
 from pathlib import Path
-from nltk.corpus import words
+import string
 
 data_path = Path("dataset")
 word_counts = dict() # follows the convention: {word : (ham count, spam count)}
@@ -31,7 +31,7 @@ def process():
 
 def process_ham(contents):
     for word in contents:
-        if word in words.words():
+        if isWord(word):
             # Add word to dictionary
             if word in word_counts:
                 word_counts[word][0] += 1
@@ -40,12 +40,20 @@ def process_ham(contents):
 
 def process_spam(contents):
     for word in contents:
-        if word in words.words():
+        if isWord(word):
             # Add word to dictionary
             if word in word_counts:
                 word_counts[word][1] += 1
             else:
                 word_counts[word] = [0, 1]
+
+def isWord(word):
+    if word in string.punctuation or word == " ":
+        return False
+    elif word == "cc" or word == "bcc":
+        return False
+    else:
+        return True
 
 def print_variables():
     print("Number of ham files: " + str(ham_file_count))
