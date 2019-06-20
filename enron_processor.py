@@ -1,64 +1,73 @@
 from pathlib import Path
 import string
+import numpy as np
 
-data_path = Path("dataset")
-word_counts = dict() # follows the convention: {word : (ham count, spam count)}
-ham_file_count = 0
-spam_file_count = 0
-vocabulary_size = 0
 
-def process():
-    global ham_file_count
-    global spam_file_count
-    global vocabulary_size
+class EnronProcessor:
+    def __init__(self):
+        self.data_path = Path("dataset")
+        # follows the convention: {word : (ham count, spam count)}
+        self.word_counts = dict()
+        self.ham_file_count = 0
+        self.ham_word_count = 0
+        self.spam_file_count = 0
+        self.spam_word_count = 0
+        self.file_count = 0
+        self.vocabulary_size = 0
 
-    for i in range(1, 7):
-        dir = data_path / ("enron" + str(i))
+    def train(self):
 
-        for file in Path(dir/"ham").iterdir():
-            ham_file_count += 1
-            email = open(str(file), "r", encoding="latin-1")
-            contents = email.read().split()
-            process_ham(contents)
+        for i in range(1, 7):
+            dir = self.data_path / ("enron" + str(i))
 
-        for file in Path(dir/"spam").iterdir():
-            spam_file_count += 1
-            email = open(str(file), "r", encoding="latin-1")
-            contents = email.read().split()
-            process_spam(contents)
+            for file in Path(dir / "ham").iterdir():
+                self.ham_file_count += 1
+                email = open(str(file), "r", encoding="latin-1")
+                contents = email.read().split()
+                self.__process_ham(contents)
 
-    vocabulary_size = len(word_counts)
+            for file in Path(dir / "spam").iterdir():
+                self.spam_file_count += 1
+                email = open(str(file), "r", encoding="latin-1")
+                contents = email.read().split()
+                self.__process_spam(contents)
 
-def process_ham(contents):
-    for word in contents:
-        if isWord(word):
-            # Add word to dictionary
-            if word in word_counts:
-                word_counts[word][0] += 1
-            else:
-                word_counts[word] = [1, 0]
+        self.file_count = self.spam_file_count + self.ham_file_count
+        category_counts = np.sum(self.word_counts.values(),  axis=0)
+        self.ham_word_count = category_counts[0]
+        self.spam_word_count = category_counts[1]
+        self.vocabulary_size = len(self.word_counts)
 
-def process_spam(contents):
-    for word in contents:
-        if isWord(word):
-            # Add word to dictionary
-            if word in word_counts:
-                word_counts[word][1] += 1
-            else:
-                word_counts[word] = [0, 1]
+    def __process_ham(self, contents):
+        for word in contents:
+            if self.__isWord(word):
+                # Add word to dictionary
+                if word in self.word_counts:
+                    self.word_counts[word][0] += 1
+                else:
+                    self.word_counts[word] = [1, 0]
 
-def isWord(word):
-    if word in string.punctuation or word == " ":
-        return False
-    elif word == "cc" or word == "bcc":
-        return False
-    else:
-        return True
+    def __process_spam(self, contents):
+        for word in contents:
+            if self.__isWord(word):
+                # Add word to dictionary
+                if word in self.word_counts:
+                    self.word_counts[word][1] += 1
+                else:
+                    self.word_counts[word] = [0, 1]
 
-def print_variables():
-    print("Number of ham files: " + str(ham_file_count))
-    print("Number of spam files: " + str(spam_file_count))
-    print("Size of vocabulary: " + str(vocabulary_size))
+    def __isWord(self, word):
+        if word in string.punctuation or word == " ":
+            return False
+        elif word == "cc" or word == "bcc":
+            return False
+        else:
+            return True
 
-process()
-print_variables()
+    def __sumClassifiedWords(self):
+        for i in
+
+    def print_variables(self):
+        print("Number of ham files: " + str(self.ham_file_count))
+        print("Number of spam files: " + str(self.spam_file_count))
+        print("Size of vocabulary: " + str(self.vocabulary_size))
