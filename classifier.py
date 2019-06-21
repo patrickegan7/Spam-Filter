@@ -1,12 +1,16 @@
-import enron_processor
+from enron_processor import EnronProcessor
 
 class Classifier:
-    def __init__(self, email):
+    def __init__(self, email=None):
+        if email != None:
+            self.email = email.read().split()
         self.enron_classifier = EnronProcessor()
         self.enron_classifier.train()
+        self.probability_ham = self.enron_classifier.ham_file_count / self.enron_classifier.file_count
+        self.probability_spam = self.enron_classifier.spam_file_count / self.enron_classifier.file_count
+
+    def changeEmail(self, email):
         self.email = email.read().split()
-        self.probability_ham = enron_classifier.ham_file_count / enron_classifier.file_count
-        self.probability_spam = enron_classifier.spam_file_count / enron_classifier.file_count
 
     def __calc_word_probabilities(self):
         # caclulate conditional probability for ham
@@ -25,12 +29,14 @@ class Classifier:
 
         return [conditional_ham_probability, conditional_spam_probability]
 
-    def classify(self):
+    def classify(self, email=None):
+        if email != None:
+            self.email = email
         word_probabilities = self.__calc_word_probabilities()
         probability_of_ham = word_probabilities[0] * self.probability_ham
         probability_of_spam = word_probabilities[1] * self.probability_spam
 
         if probability_of_ham > probability_of_spam:
-            return "Ham, " + str(probability_of_ham)
+            return 1
         else:
-            return "Spam, " + str(probability_of_spam)
+            return 0

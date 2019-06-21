@@ -17,7 +17,7 @@ class EnronProcessor:
 
     def train(self):
 
-        for i in range(1, 7):
+        for i in range(1, 6):
             dir = self.data_path / ("enron" + str(i))
 
             for file in Path(dir / "ham").iterdir():
@@ -33,7 +33,7 @@ class EnronProcessor:
                 self.__process_spam(contents)
 
         self.file_count = self.spam_file_count + self.ham_file_count
-        category_counts = np.sum(self.word_counts.values(),  axis=0)
+        category_counts = list(np.sum(self.word_counts.values(),  axis=0))
         self.ham_word_count = category_counts[0]
         self.spam_word_count = category_counts[1]
         self.vocabulary_size = len(self.word_counts)
@@ -63,9 +63,6 @@ class EnronProcessor:
             return False
         else:
             return True
-
-    def __sumClassifiedWords(self):
-        for i in
 
     def print_variables(self):
         print("Number of ham files: " + str(self.ham_file_count))
