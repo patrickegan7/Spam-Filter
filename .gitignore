@@ -7,3 +7,6 @@ enron6.tar.gz
 
 dataset/
 zipped_dataset/
+
+__pycache__
+training_data

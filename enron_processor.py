@@ -1,6 +1,7 @@
 from pathlib import Path
 import string
 import numpy as np
+import pickle
 
 
 class EnronProcessor:
@@ -16,7 +17,6 @@ class EnronProcessor:
         self.vocabulary_size = 0
 
     def train(self):
-
         for i in range(1, 6):
             dir = self.data_path / ("enron" + str(i))
 
@@ -34,8 +34,8 @@ class EnronProcessor:
 
         self.file_count = self.spam_file_count + self.ham_file_count
         category_counts = list(np.sum(self.word_counts.values(),  axis=0))
-        self.ham_word_count = category_counts[0]
-        self.spam_word_count = category_counts[1]
+        self.ham_word_count = sum(category_counts[0])
+        self.spam_word_count = sum(category_counts[1])
         self.vocabulary_size = len(self.word_counts)
 
     def __process_ham(self, contents):
@@ -63,6 +63,15 @@ class EnronProcessor:
             return False
         else:
             return True
+
+    def pickleTrainingData(self):
+        self.train()
+        training = {"ham_word_count": self.ham_word_count, "spam_word_count": self.spam_word_count,
+                    "ham_file_count": self.ham_file_count, "spam_file_count": self.spam_file_count}
+        file = open("training_data", "wb")
+        pickle.dump(training, file)
+        file.close()
+        return training
 
     def print_variables(self):
         print("Number of ham files: " + str(self.ham_file_count))
