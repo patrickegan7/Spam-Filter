@@ -1,4 +1,5 @@
 from enron_processor import EnronProcessor
+from pathlib import Path
 
 
 class Classifier:
@@ -6,13 +7,17 @@ class Classifier:
         if email != None:
             self.email = email.read().split()
         self.enron_classifier = EnronProcessor()
-        self.enron_classifier.train()
+        if Path("training_data").is_file():
+            self.enron_classifier.load_training_data()
+        else:
+            # trains classifier and saves data
+            self.enron_classifier.save_training_data()
         self.probability_ham = self.enron_classifier.ham_file_count / \
             self.enron_classifier.file_count
         self.probability_spam = self.enron_classifier.spam_file_count / \
             self.enron_classifier.file_count
 
-    def changeEmail(self, email):
+    def change_email(self, email):
         self.email = email.read().split()
 
     def __calc_word_probabilities(self):
