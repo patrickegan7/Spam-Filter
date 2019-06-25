@@ -12,10 +12,8 @@ class Classifier:
         else:
             # trains classifier and saves data
             self.enron_classifier.save_training_data()
-        self.probability_ham = self.enron_classifier.ham_file_count / \
-            self.enron_classifier.file_count
-        self.probability_spam = self.enron_classifier.spam_file_count / \
-            self.enron_classifier.file_count
+        self.probability_ham = self.enron_classifier.ham_file_count / self.enron_classifier.file_count
+        self.probability_spam = self.enron_classifier.spam_file_count / self.enron_classifier.file_count
 
     def change_email(self, email):
         self.email = email.read().split()
@@ -24,10 +22,8 @@ class Classifier:
         # caclulate conditional probability for ham
         conditional_ham_probability = 1.0
         conditional_spam_probability = 1.0
-        ham_denominator = self.enron_classifier.ham_word_count + \
-            self.enron_classifier.vocabulary_size
-        spam_denominator = self.enron_classifier.spam_word_count + \
-            self.enron_classifier.vocabulary_size
+        ham_denominator = self.enron_classifier.ham_word_count + self.enron_classifier.vocabulary_size
+        spam_denominator = self.enron_classifier.spam_word_count + self.enron_classifier.vocabulary_size
         for word in self.email:
             ham_numerator = 1.0  # laplace smoothing
             spam_numerator = 1.0

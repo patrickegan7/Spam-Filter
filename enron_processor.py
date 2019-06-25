@@ -16,27 +16,38 @@ class EnronProcessor:
         self.file_count = 0
         self.vocabulary_size = 0
 
-    def train(self):
+    def train(self): # TODO implement 6-fold cross validation
+        error_rates = list()
+        # follows format: [..., [error_rate, word_counts, ham_file_count, spam_file_count] , ...]
         for i in range(1, 7):
-            dir = self.data_path / ("enron" + str(i))
+            for j in range(1,7):
+                if i != j:
+                    dir = self.data_path / ("enron" + str(j))
 
-            for file in Path(dir / "ham").iterdir():
-                self.ham_file_count += 1
-                email = open(str(file), "r", encoding="latin-1")
-                contents = email.read().split()
-                self.__process_ham(contents)
+                    for file in Path(dir / "ham").iterdir():
+                        self.ham_file_count += 1
+                        email = open(str(file), "r", encoding="latin-1")
+                        contents = email.read().split()
+                        self.__process_ham(contents)
 
-            for file in Path(dir / "spam").iterdir():
-                self.spam_file_count += 1
-                email = open(str(file), "r", encoding="latin-1")
-                contents = email.read().split()
-                self.__process_spam(contents)
+                    for file in Path(dir / "spam").iterdir():
+                        self.spam_file_count += 1
+                        email = open(str(file), "r", encoding="latin-1")
+                        contents = email.read().split()
+                        self.__process_spam(contents)
+
+            self.__calc_error_rate(i, error_rates)
+            # TODO: implement
 
         self.file_count = self.spam_file_count + self.ham_file_count
         category_counts = list(np.sum(self.word_counts.values(),  axis=0))
         self.ham_word_count = sum(category_counts[0])
         self.spam_word_count = sum(category_counts[1])
         self.vocabulary_size = len(self.word_counts)
+
+    def __calc_error_rate(index, error_rates):
+        # TODO: implement
+
 
     def __process_ham(self, contents):
         for word in contents:
