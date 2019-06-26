@@ -36,6 +36,8 @@ class EnronProcessor:
                         contents = email.read().split()
                         self.__process_spam(contents)
 
+                        # TODO need to update word counts before calculating error
+
             self.__calc_error_rate(i, error_rates)
             error_rates[i - 1][1] = self.word_counts
             error_rates[i - 1][2] = self.ham_file_count
@@ -59,19 +61,27 @@ class EnronProcessor:
     def __calc_error_rate(self, index, error_rates):
         num_classifications = 0
         misclassifications = 0
-        test_path = self.data_path / ("enron" + str(i))
+        test_path = self.data_path / ("enron" + str(index))
 
         for file in Path(test_path / "ham").iterdir():
+            email = open(file, "r", encoding="latin-1")
             num_classifications += 1
-            conditional_prob = calc_word_probabilities(file.read().split())
+            conditional_prob = self.calc_word_probabilities(email.read().split())
+
             if conditional_prob[1]*(self.spam_file_count/self.file_count) >= conditional_prob[0]*(self.ham_file_count/self.file_count):
                 misclassifications += 1
 
+            close(file)
+
         for file in Path(test_path / "spam").iterdir():
+            email = open(file, "r", encoding="latin-1")
             num_classifications += 1
-            conditional_prob = calc_word_probabilities(file.read().split())
+            conditional_prob = self.calc_word_probabilities(email.read().split())
+
             if conditional_prob[1]*(self.spam_file_count/self.file_count) < conditional_prob[0]*(self.ham_file_count/self.file_count):
                 misclassifications += 1
+
+            close(file)
 
         error_rates[index - 1][0] = misclassifications / num_classifications
 
@@ -86,8 +96,8 @@ class EnronProcessor:
             ham_numerator = 1.0
             spam_numerator = 1.0
             if word in self.word_counts:
-                ham_numerator += word_counts[word][0]
-                spam_numerator += word_counts[word][1]
+                ham_numerator += self.word_counts[word][0]
+                spam_numerator += self.word_counts[word][1]
             conditional_ham_probability *= (ham_numerator / ham_denominator)
             conditional_spam_probability *= (spam_numerator / spam_denominator)
 

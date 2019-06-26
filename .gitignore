@@ -10,3 +10,4 @@ zipped_dataset/
 
 __pycache__
 training_data
+tester.py
