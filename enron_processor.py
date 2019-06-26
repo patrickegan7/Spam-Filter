@@ -16,7 +16,7 @@ class EnronProcessor:
         self.file_count = 0
         self.vocabulary_size = 0
 
-    def train(self): # TODO implement 6-fold cross validation
+    def train(self):
         error_rates = list()
         # follows format: [..., [error_rate, word_counts, ham_file_count, spam_file_count] , ...]
         for i in range(1, 7):
@@ -37,16 +37,61 @@ class EnronProcessor:
                         self.__process_spam(contents)
 
             self.__calc_error_rate(i, error_rates)
-            # TODO: implement
+            error_rates[i - 1][1] = self.word_counts
+            error_rates[i - 1][2] = self.ham_file_count
+            error_rates[i - 1][3] = self.spam_file_count
 
-        self.file_count = self.spam_file_count + self.ham_file_count
-        category_counts = list(np.sum(self.word_counts.values(),  axis=0))
+        # find best Classifier from error_rate
+        min = error_rates[0][0]
+        min_index = 0
+        for i in error_rates:
+            if min > error_rates[i][0]:
+                min = error_rates[i][0]
+                min_index = i
+
+        min_classifier = error_rates[min_index]
+        self.file_count = min_classifier[2] + min_classifier[3] #spam_file_count + ham_file_count
+        category_counts = list(np.sum(min_classifier[1].values(),  axis=0))
         self.ham_word_count = sum(category_counts[0])
         self.spam_word_count = sum(category_counts[1])
         self.vocabulary_size = len(self.word_counts)
 
-    def __calc_error_rate(index, error_rates):
-        # TODO: implement
+    def __calc_error_rate(self, index, error_rates):
+        num_classifications = 0
+        misclassifications = 0
+        test_path = self.data_path / ("enron" + str(i))
+
+        for file in Path(test_path / "ham").iterdir():
+            num_classifications += 1
+            conditional_prob = calc_word_probabilities(file.read().split())
+            if conditional_prob[1]*(self.spam_file_count/self.file_count) >= conditional_prob[0]*(self.ham_file_count/self.file_count):
+                misclassifications += 1
+
+        for file in Path(test_path / "spam").iterdir():
+            num_classifications += 1
+            conditional_prob = calc_word_probabilities(file.read().split())
+            if conditional_prob[1]*(self.spam_file_count/self.file_count) < conditional_prob[0]*(self.ham_file_count/self.file_count):
+                misclassifications += 1
+
+        error_rates[index - 1][0] = misclassifications / num_classifications
+
+
+    def calc_word_probabilities(self, email):
+        # caclulate conditional probability for ham
+        conditional_ham_probability = 1.0
+        conditional_spam_probability = 1.0
+        ham_denominator = self.ham_word_count + self.vocabulary_size
+        spam_denominator = self.spam_word_count + self.vocabulary_size
+        for word in email:
+            ham_numerator = 1.0
+            spam_numerator = 1.0
+            if word in self.word_counts:
+                ham_numerator += word_counts[word][0]
+                spam_numerator += word_counts[word][1]
+            conditional_ham_probability *= (ham_numerator / ham_denominator)
+            conditional_spam_probability *= (spam_numerator / spam_denominator)
+
+        return [conditional_ham_probability, conditional_spam_probability]
 
 
     def __process_ham(self, contents):
