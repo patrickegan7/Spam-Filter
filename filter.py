@@ -20,4 +20,4 @@ for email in (test_set / "spam").iterdir():
 print("Number of ham misclassifications: " + str(num_ham_errors))
 print("Number of spam misclassifications: " + str(num_spam_errors))
 print("Error rate: " + str((num_ham_errors + num_spam_errors) / total_num_classifications))
-print("Total ham classifications: " + str(total_num_classifications))
+print("Total classifications: " + str(total_num_classifications))

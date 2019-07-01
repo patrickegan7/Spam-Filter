@@ -36,27 +36,34 @@ class EnronProcessor:
                         contents = email.read().split()
                         self.__process_spam(contents)
 
-                        # TODO need to update word counts before calculating error
+                        category_counts = self.__get_word_counts(self.word_counts)
+                        self.ham_word_count = category_counts[0]
+                        self.spam_word_count = category_counts[1]
+                        self.vocabulary_size = category_counts[2]
+                        self.file_count = self.ham_file_count + self.spam_file_count
+
 
             self.__calc_error_rate(i, error_rates)
-            error_rates[i - 1][1] = self.word_counts
-            error_rates[i - 1][2] = self.ham_file_count
-            error_rates[i - 1][3] = self.spam_file_count
+            error_rates[i - 1].append(self.word_counts)
+            error_rates[i - 1].append(self.ham_file_count)
+            error_rates[i - 1].append(self.spam_file_count)
 
         # find best Classifier from error_rate
         min = error_rates[0][0]
         min_index = 0
-        for i in error_rates:
+        for i in range(len(error_rates)):
             if min > error_rates[i][0]:
                 min = error_rates[i][0]
                 min_index = i
 
+        print(min)
+
         min_classifier = error_rates[min_index]
         self.file_count = min_classifier[2] + min_classifier[3] #spam_file_count + ham_file_count
-        category_counts = list(np.sum(min_classifier[1].values(),  axis=0))
-        self.ham_word_count = sum(category_counts[0])
-        self.spam_word_count = sum(category_counts[1])
-        self.vocabulary_size = len(self.word_counts)
+        category_counts = self.__get_word_counts(min_classifier[1])#list(np.sum(min_classifier[1].values(),  axis=0))
+        self.ham_word_count = category_counts[0]
+        self.spam_word_count = category_counts[1]
+        self.vocabulary_size = category_counts[2]
 
     def __calc_error_rate(self, index, error_rates):
         num_classifications = 0
@@ -71,7 +78,7 @@ class EnronProcessor:
             if conditional_prob[1]*(self.spam_file_count/self.file_count) >= conditional_prob[0]*(self.ham_file_count/self.file_count):
                 misclassifications += 1
 
-            close(file)
+            email.close()
 
         for file in Path(test_path / "spam").iterdir():
             email = open(file, "r", encoding="latin-1")
@@ -81,9 +88,9 @@ class EnronProcessor:
             if conditional_prob[1]*(self.spam_file_count/self.file_count) < conditional_prob[0]*(self.ham_file_count/self.file_count):
                 misclassifications += 1
 
-            close(file)
+            email.close()
 
-        error_rates[index - 1][0] = misclassifications / num_classifications
+        error_rates.append([misclassifications / num_classifications])
 
 
     def calc_word_probabilities(self, email):
@@ -93,15 +100,19 @@ class EnronProcessor:
         ham_denominator = self.ham_word_count + self.vocabulary_size
         spam_denominator = self.spam_word_count + self.vocabulary_size
         for word in email:
-            ham_numerator = 1.0
+            ham_numerator = 1.0 #Laplace smoothing
             spam_numerator = 1.0
             if word in self.word_counts:
                 ham_numerator += self.word_counts[word][0]
-                spam_numerator += self.word_counts[word][1]
-            conditional_ham_probability *= (ham_numerator / ham_denominator)
-            conditional_spam_probability *= (spam_numerator / spam_denominator)
+                spam_numerator += self.word_counts[word][1]\
+            conditional_ham_probability *= ham_numerator
+            conditional_spam_probability *= spam_numerator
 
-        return [conditional_ham_probability, conditional_spam_probability]
+        return [conditional_ham_probability/ham_denominator, conditional_spam_probability/spam_denominator]
+
+    def __get_word_counts(self, word_counts):
+        category_counts = list(np.sum(word_counts.values(),  axis=0))
+        return [sum(category_counts[0]), sum(category_counts[1]), len(word_counts)]
 
 
     def __process_ham(self, contents):
