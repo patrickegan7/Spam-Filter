@@ -104,7 +104,7 @@ class EnronProcessor:
             spam_numerator = 1.0
             if word in self.word_counts:
                 ham_numerator += self.word_counts[word][0]
-                spam_numerator += self.word_counts[word][1]\
+                spam_numerator += self.word_counts[word][1]
             conditional_ham_probability *= ham_numerator
             conditional_spam_probability *= spam_numerator
 
